@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # Auth service with its dedicated PostgreSQL
+  auth:
+    build:
+      context: ./packages/auth
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://auth_user:auth_password@auth-db:5432/auth_db
+      - PORT=4000
+    depends_on:
+      - auth-db
+    volumes:
+      - ./packages/auth:/app
+      - /app/node_modules
+    networks:
+      - auth-network
+      - app-network
+
+  auth-db:
+    image: postgres:16
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=auth_user
+      - POSTGRES_PASSWORD=auth_password
+      - POSTGRES_DB=auth_db
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+    networks:
+      - auth-network
+
+  # Server service with its dedicated PostgreSQL
+  server:
+    build:
+      context: ./packages/server
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://server_user:server_password@server-db:5432/server_db
+      - PORT=3001
+    depends_on:
+      - server-db
+    volumes:
+      - ./packages/server:/app
+      - /app/node_modules
+    networks:
+      - server-network
+      - app-network
+
+  server-db:
+    image: postgres:16
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=server_user
+      - POSTGRES_PASSWORD=server_password
+      - POSTGRES_DB=server_db
+    volumes:
+      - server-db-data:/var/lib/postgresql/data
+    networks:
+      - server-network
+
+  # Client application
+  client:
+    build:
+      context: ./packages/client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_AUTH_URL=http://auth:4000
+      - NEXT_PUBLIC_SERVER_URL=http://server:3001
+    volumes:
+      - ./packages/client:/app
+      - /app/node_modules
+    depends_on:
+      - auth
+      - server
+    networks:
+      - app-network
+
+networks:
+  auth-network:
+    driver: bridge
+  server-network:
+    driver: bridge
+  app-network:
+    driver: bridge
+
+volumes:
+  auth-db-data:
+  server-db-data:

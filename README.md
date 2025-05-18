@@ -1,29 +1,98 @@
-# Create T3 App
+# Reuse.io
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+A monorepo containing auth, server, and client applications.
 
-## What's next? How do I make an app with this?
+## Project Structure
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+```
+reuse_io/
+├── packages/
+│   ├── auth/          # Authentication service
+│   ├── server/        # API server
+│   └── client/        # Next.js frontend
+├── docker-compose.yml # Docker Compose configuration
+└── package.json       # Root package.json
+```
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## Prerequisites
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+- Node.js 18+
+- PNPM 9.15.1+
+- Docker and Docker Compose
 
-## Learn More
+## Getting Started
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+### Local Development
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+1. Install dependencies:
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+```bash
+pnpm install
+```
 
-## How do I deploy this?
+2. Create `.env` files for each service:
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+```bash
+cp packages/auth/.env.example packages/auth/.env
+cp packages/server/.env.example packages/server/.env
+cp packages/client/.env.example packages/client/.env
+```
+
+3. Start all services in development mode:
+
+```bash
+pnpm run dev
+```
+
+This will concurrently start:
+- Auth service on port 4000
+- Server service on port 3001
+- Client application on port 3000
+
+### Using Docker
+
+1. Build and start all services:
+
+```bash
+docker compose up
+```
+
+2. Access the applications:
+   - Client: http://localhost:3000
+   - Auth API: http://localhost:4000
+   - Server API: http://localhost:3001
+
+## Database Management
+
+Each service has its own PostgreSQL database:
+
+- Auth DB: PostgreSQL on port 5432
+- Server DB: PostgreSQL on port 5433
+
+### Running Prisma Migrations
+
+For the auth service:
+
+```bash
+cd packages/auth
+pnpm prisma migrate dev
+```
+
+For the server service:
+
+```bash
+cd packages/server
+pnpm prisma migrate dev
+```
+
+## Building for Production
+
+```bash
+pnpm run build
+```
+
+## Starting Production Services
+
+```bash
+pnpm run start
+```
